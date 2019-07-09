@@ -13,3 +13,23 @@ ld -s -o main main.o
 gcc hello.c -o hello
 ./hello
 objdump -d hello > hello.asm
+
+### To set cgroups manually
+
+# These are the different controllers which are created by the kernel itself. 
+ls -l /sys/fs/cgroup/
+
+# Each of these controllers have their own tunables for example
+ls -l /sys/fs/cgroup/cpuacct/
+
+# Demo usernamespace:
+# create a new namespace and run bash on it
+sudo unshare -u bash
+
+# Check the machine name (inside and outside namespace)
+uname -n
+
+# change machine name inside namespace
+hostname CarlosContainer
+
+# run unname again in both
