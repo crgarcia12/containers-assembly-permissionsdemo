@@ -33,3 +33,9 @@ uname -n
 hostname CarlosContainer
 
 # run unname again in both
+
+# What namespae am I in?
+readlink /proc/$$/ns/uts
+
+# get a terminal in docker
+docker run -v /tmp:/mnt3 -it ubuntu /bin/sh
