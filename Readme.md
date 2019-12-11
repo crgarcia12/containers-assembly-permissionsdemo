@@ -1,13 +1,15 @@
 # ASEM
-Run this . build.sh
+Run this 
+. build.sh
 
 To compile in Linux
-# this will produce main.o ELF object file
+### this will produce main.o ELF object file
 nasm -f elf64 main.asm -o main.o
-# this will produce main executable
+### this will produce main executable
 ld -s -o main main.o
 
 # C++
+Run this
 . hello.sh
 
 gcc hello.c -o hello
