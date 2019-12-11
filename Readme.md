@@ -9,22 +9,30 @@ nasm -f elf64 main.asm -o main.o
 ld -s -o main main.o
 
 # C++
-Run this
-. hello.sh
+To build the C++ run this
 
+```
+. hello.sh
 gcc hello.c -o hello
 ./hello
+
+# Decompile:
+
 objdump -d hello > hello.asm
+```
 
-### To set cgroups manually
+# To set cgroups manually
 
-# These are the different controllers which are created by the kernel itself. 
+```
+# These are the different controllers which are created by the kernel itself.
 ls -l /sys/fs/cgroup/
 
 # Each of these controllers have their own tunables for example
 ls -l /sys/fs/cgroup/cpuacct/
+```
 
-# Demo usernamespace:
+## Demo usernamespace:
+```
 # create a new namespace and run bash on it
 sudo unshare -u bash
 
@@ -38,6 +46,8 @@ hostname CarlosContainer
 
 # What namespae am I in?
 readlink /proc/$$/ns/uts
+
+```
 
 # get a terminal in docker
 docker run -v /tmp:/mnt3 -it ubuntu /bin/sh
