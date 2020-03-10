@@ -51,3 +51,8 @@ readlink /proc/$$/ns/uts
 
 # get a terminal in docker
 docker run -v /tmp:/mnt3 -it ubuntu /bin/sh
+
+
+
+## Other linux commands
+nsenter: run program with namespaces of other programm
