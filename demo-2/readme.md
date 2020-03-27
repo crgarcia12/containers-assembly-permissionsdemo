@@ -12,19 +12,16 @@ Taking instructions from Linux device drivers book
 https://learning.oreilly.com/library/view/linux-device-drivers/9781785280009/77b7fd36-fa66-45c1-9b38-65baf42c0d34.xhtml
 
 ## Running the example
+We have created a Makefile with the commands needed to build and load the module. 
+To run it, get a root console:
 
 sudo bash
+
+### Build the kernel module
 make
 
-# load the module and check that it runned
-insmod lkm_example.ko
-dmesg | grep "Hello"
-
-# is it still running?
-lsmod | grep "lkm_example"
-
-# removing the module
-rmmod lkm_example
-
-# another easy way
+### Load the kernel module
 make test
+
+### Check the major number from the output of the previous command y use it to create a device file
+sudo mknod /dev/lkm_example c <MAJOR> 236
