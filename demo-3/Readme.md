@@ -20,4 +20,4 @@ pstree -p > tree.txt
 serach for watch, dockerd
 
 # How is a container created?
-sudo strace -f -p `pidof containerd` -o strafce_log > syscalls.txt
+sudo strace -p `pidof containerd` -o strafce_log

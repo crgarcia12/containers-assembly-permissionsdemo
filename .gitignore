@@ -1,2 +1,10 @@
 *.out
 main
+
+# demo-2
+*.mod*
+*.symvers
+*.order
+*.ko
+*.cmd
+*.o
