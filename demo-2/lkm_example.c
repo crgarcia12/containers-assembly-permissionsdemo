@@ -78,6 +78,7 @@ static int device_open(struct inode *inode, struct file *file)
     try_module_get(THIS_MODULE);
     return 0;
 }
+
 /* Called when a process closes our device */
 static int device_release(struct inode *inode, struct file *file)
 {
@@ -86,6 +87,7 @@ static int device_release(struct inode *inode, struct file *file)
     module_put(THIS_MODULE);
     return 0;
 }
+
 static int __init lkm_example_init(void)
 {
     /* Fill buffer with our message */
@@ -105,6 +107,7 @@ static int __init lkm_example_init(void)
         return 0;
     }
 }
+
 static void __exit lkm_example_exit(void)
 {
     /* Remember — we have to clean up after ourselves. Unregister the character device. */

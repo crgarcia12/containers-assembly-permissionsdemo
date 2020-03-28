@@ -52,7 +52,19 @@ readlink /proc/$$/ns/uts
 # get a terminal in docker
 docker run -v /tmp:/mnt3 -it ubuntu /bin/sh
 
-
-
 ## Other linux commands
-nsenter: run program with namespaces of other programm
+nsenter --target --mount : run program with namespaces of other programm
+
+## Jump into a container file system
+```
+docker run -it -v /tmp3:/mnt3 ubuntu /bin/sh
+watch ls 
+```
+
+In another bash, you can enter to that mount namespace like this:
+1. Find the Pid
+ps -ahl | grep watch
+4     0 21466 19843  20   0  11572  2620 -      S+   pts/0      0:00 watch ls
+
+sudo nsenter --target 21466 --mount
+cd mnt3
