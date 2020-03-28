@@ -3,13 +3,16 @@
 #include <linux/kernel.h>
 #include <linux/fs.h>
 #include <asm/uaccess.h>
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Robert W.Oliver II");
 MODULE_DESCRIPTION("A simple example Linux module.");
 MODULE_VERSION("0.01");
+
 #define DEVICE_NAME "lkm_example"
-#define EXAMPLE_MSG "Hello, World !\n"
-#define MSG_BUFFER_LEN 15
+#define EXAMPLE_MSG "Hello, World. This is executed in ring: _ \n"
+#define MSG_BUFFER_LEN 43
+
 /* Prototypes for device functions */
 static int device_open(struct inode *, struct file *);
 static int device_release(struct inode *, struct file *);
@@ -19,26 +22,35 @@ static int major_num;
 static int device_open_count = 0;
 static char msg_buffer[MSG_BUFFER_LEN];
 static char *msg_ptr;
+
 /* This structure points to all of the device functions */
 static struct file_operations file_ops = {
     .read = device_read,
     .write = device_write,
     .open = device_open,
-    .release = device_release};
+    .release = device_release
+};
+
 /* When a process reads from our device, this gets called. */
 static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *offset)
 {
     int bytes_read = 0;
+
+    uint64_t rcs = 0;
+    asm ("mov %%cs, %0" : "=r" (rcs));
+    msg_buffer[MSG_BUFFER_LEN - 3] = (int) (rcs & 3) + '0';
+
     /* If we’re at the end, loop back to the beginning */
     if (*msg_ptr == 0)
     {
         msg_ptr = msg_buffer;
     }
+
     /* Put data in the buffer */
     while (len && *msg_ptr)
     {
         /* Buffer is in user data, not kernel, so you can’t just reference
- * with a pointer. The function put_user handles this for us */
+        * with a pointer. The function put_user handles this for us */
         put_user(*(msg_ptr++), buffer++);
         len--;
         bytes_read++;
