@@ -34,12 +34,15 @@ static struct file_operations file_ops = {
 /* When a process reads from our device, this gets called. */
 static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *offset)
 {
-    int bytes_read = 0;
+    // https://elixir.bootlin.com/linux/latest/source/include/linux/sched.h
+    struct task_struct *current_task = current; // getting global current pointer
+    struct task_struct *p = current;
 
+    int bytes_read = 0;
     uint64_t rcs = 0;
     asm ("mov %%cs, %0" : "=r" (rcs));
     msg_buffer[MSG_BUFFER_LEN - 3] = (int) (rcs & 3) + '0';
-
+    
     /* If we’re at the end, loop back to the beginning */
     if (*msg_ptr == 0)
     {
@@ -55,6 +58,16 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
         len--;
         bytes_read++;
     }
+
+    // You can read this using 'dmesg'
+    printk(KERN_NOTICE "called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
+
+    while(p != 0)
+    {
+        // You can explore the struct in here
+        p = p->parent;
+    }
+
     return bytes_read;
 }
 

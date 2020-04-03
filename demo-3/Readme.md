@@ -1,5 +1,6 @@
 # Get a terminal in docker
-docker run -v /tmp3:/mnt3 -it ubuntu /bin/sh
+docker run -it -v /tmp3:/mnt3 ubuntu /bin/sh 
+docker run -it ubuntu /bin/sh
 
 # Write a file from the container
 ## in docker
@@ -21,3 +22,4 @@ serach for watch, dockerd
 
 # How is a container created?
 sudo strace -p `pidof containerd` -o strafce_log
+

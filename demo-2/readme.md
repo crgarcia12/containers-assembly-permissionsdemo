@@ -17,14 +17,19 @@ To run it, get a root console:
 
 sudo bash
 
-### Build the kernel module
+# Build the driver
 make
 
-### Load the kernel module
+# Load the driver
 make test
 
-### Check the major number from the output of the previous command y use it to create a device file
+# invoke the driver
+
+## Check the major number from the output of the previous command y use it to create a device file
 sudo mknod /dev/lkm_example c <MAJOR> 0
 
-### Test it
+## Test it
 cat /dev/lkm_example
+
+## To get kernel logs
+dmesg
