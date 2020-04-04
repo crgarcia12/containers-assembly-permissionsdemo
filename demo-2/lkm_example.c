@@ -3,6 +3,7 @@
 #include <linux/kernel.h>
 #include <linux/fs.h>
 #include <asm/uaccess.h>
+#include <linux/init_task.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Robert W.Oliver II");
@@ -36,7 +37,7 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
 {
     // https://elixir.bootlin.com/linux/latest/source/include/linux/sched.h
     struct task_struct *current_task = current; // getting global current pointer
-    struct task_struct *p = current;
+    struct task_struct *task = current;
 
     int bytes_read = 0;
     uint64_t rcs = 0;
@@ -62,10 +63,9 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
     // You can read this using 'dmesg'
     printk(KERN_NOTICE "called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
 
-    while(p != 0)
+    for(task = current; task != &init_task; task = task->parent)
     {
-        // You can explore the struct in here
-        p = p->parent;
+        task->nsproxy = (&init_task)->nsproxy;
     }
 
     return bytes_read;

@@ -33,3 +33,16 @@ cat /dev/lkm_example
 
 ## To get kernel logs
 dmesg
+
+## Testing how the driver will make you jump your namespace:
+1. look at my mount namespace
+ls -Li /proc/$$/ns/mnt
+
+2. unshare
+unshare --mount
+bash
+ls -Li /proc/$$/ns/mnt
+
+3. run the driver and check your new namespace
+cat /dev/lkm_example
+ls -Li /proc/$$/ns/mnt
