@@ -5,6 +5,9 @@
 Run this 
 . assem-build.sh
 
+Or run this for 64 bits (WSL)
+. assem-build.sh -64 
+
 To compile in Linux
 ### this will produce main.o ELF object file
 nasm -f elf64 assem-main.asm -o assem-main.o

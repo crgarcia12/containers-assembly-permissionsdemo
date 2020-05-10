@@ -6,25 +6,26 @@ global      _start                              ;must be declared for linker (ld
 _start:                                         ;tell linker entry point
 
     mov     edx,len                             ;message length
-    mov     ecx,msg                             ;message to write
-    mov     ebx,1                               ;file descriptor (stdout)
-    mov     eax,4                               ;system call number (sys_write)
-    int     0x80                                ;call kernel
+    mov     rsi,msg                             ;message to write
+    mov     edi,1                               ;file descriptor (stdout)
+    mov     eax,1                               ;system call number (sys_write)
+    syscall                                     ;call kernel
 
     ; this will try to write the value of al to the port dx. privileged instruction, it will fail
     ; out     dx, al
     mov     eax, ecx
     call    printNumber
 
-    mov     eax,1                               ;system call number (sys_exit)
-    int     0x80                                ;call kernel
+    xor edi, edi                                ;Return value = 0
+    mov     eax,60                              ;system call number (sys_exit)
+    syscall                                     ;call kernel
 
 printCharacter:
-    mov             eax, 4                  ; system call #4 = sys_write
+    mov             eax, 1                  ; system call #4 = sys_write
     mov             ebx, 1                  ; file descriptor 1 = stdout
     mov             ecx, digit              ; store *address* of digit into ecx
     mov             edx, 16                 ; byte size of 16
-    int             80h
+    syscall
     ret
 
 printNumber:
