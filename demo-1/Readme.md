@@ -1,27 +1,27 @@
-# ASEM
+# Demo 1: Build Assembly
 Run this 
 . build.sh
 
 To compile in Linux
 ### this will produce main.o ELF object file
-nasm -f elf64 main.asm -o main.o
+nasm -f elf64 assem-main.asm -o assem-main.o
 ### this will produce main executable
-ld -s -o main main.o
+ld -s -o assem-main assem-main.o
 
-# C++
+# Demo 2: build C
 To build the C++ run this
 
 ```
-. hello.sh
-gcc hello.c -o hello
-./hello
+. cpp-build.sh
+gcc cpp-main.c -o cpp-main
+./cpp-main
 
 # Decompile:
 
-objdump -d hello > hello.asm
+objdump -d cpp-main > cpp-main.asm
 ```
 
-# To set cgroups manually
+# Demo 3: Set cgroups manually
 
 ```
 # These are the different controllers which are created by the kernel itself.
