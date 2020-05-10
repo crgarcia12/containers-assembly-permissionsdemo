@@ -1,3 +1,11 @@
+# Description
+This demo covers many things!
+-compile assembly code
+-compile C code
+-disasembly C code
+-Set cgroups
+-Create namespaces 
+
 # Clean the project
 . clean.sh
 
