@@ -1,6 +1,9 @@
+# Clean the project
+. clean.sh
+
 # Demo 1: Build Assembly
 Run this 
-. build.sh
+. assem-build.sh
 
 To compile in Linux
 ### this will produce main.o ELF object file
@@ -12,13 +15,13 @@ ld -s -o assem-main assem-main.o
 To build the C++ run this
 
 ```
-. cpp-build.sh
-gcc cpp-main.c -o cpp-main
-./cpp-main
+. c-build.sh
+gcc c-main.c -o c-main
+./c-main
 
 # Decompile:
 
-objdump -d cpp-main > cpp-main.asm
+objdump -d c-main > c-main.asm
 ```
 
 # Demo 3: Set cgroups manually
