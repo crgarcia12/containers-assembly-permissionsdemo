@@ -24,6 +24,16 @@ static int device_open_count = 0;
 static char msg_buffer[MSG_BUFFER_LEN];
 static char *msg_ptr;
 
+
+/* ================================================================ */
+static int lkm_ndevices = lkm_NDEVICES;
+module_param(lkm_ndevices, int, S_IRUGO);
+
+static unsigned int lkm_major = 0;
+static struct lkm_dev *lkm_devices = NULL;
+static struct class *lkm_class = NULL;
+/* ================================================================ */
+
 /* This structure points to all of the device functions */
 static struct file_operations file_ops = {
     .read = device_read,
@@ -107,18 +117,66 @@ static int __init lkm_example_init(void)
     strncpy(msg_buffer, EXAMPLE_MSG, MSG_BUFFER_LEN);
     /* Set the msg_ptr to the buffer */
     msg_ptr = msg_buffer;
+
     /* Try to register character device */
-    major_num = register_chrdev(0, "lkm_example", &file_ops);
-    if (major_num < 0)
-    {
-        printk(KERN_ALERT "Could not register device: % d\n", major_num);
-        return major_num;
-    }
-    else
-    {
-        printk(KERN_INFO "lkm_example module loaded with device major number % d\n", major_num);
-        return 0;
-    }
+    // major_num = register_chrdev(0, "lkm_example", &file_ops);
+    // if (major_num < 0)
+    // {
+    //     printk(KERN_ALERT "Could not register device: % d\n", major_num);
+    //     return major_num;
+    // }
+    // else
+    // {
+    //     printk(KERN_INFO "lkm_example module loaded with device major number % d\n", major_num);
+    //     return 0;
+    // }
+
+    printk(KERN_WARNING "[target] lkm_ndevices: %d\n", lkm_ndevices);
+	if (lkm_ndevices <= 0)
+	{
+		printk(KERN_WARNING "[target] Invalid value of lkm_ndevices: %d\n", lkm_ndevices);
+		err = -EINVAL;
+		return err;
+	}
+
+    /* Get a range of minor numbers (starting with 0) to work with */
+	err = alloc_chrdev_region(&dev, 0, lkm_ndevices, lkm_DEVICE_NAME);
+	if (err < 0) {
+		printk(KERN_WARNING "[target] alloc_chrdev_region() failed. Error: %d\n", err);
+		return err;
+	}
+	lkm_major = MAJOR(dev);
+
+	/* Create device class (before allocation of the array of devices) */
+	lkm_class = class_create(THIS_MODULE, lkm_DEVICE_NAME);
+	if (IS_ERR(lkm_class)) {
+		err = PTR_ERR(lkm_class);
+		goto fail;
+	}
+	
+	/* Allocate the array of devices */
+	lkm_devices = (struct lkm_dev *)kzalloc(
+		lkm_ndevices * sizeof(struct lkm_dev), 
+		GFP_KERNEL);
+	if (lkm_devices == NULL) {
+		err = -ENOMEM;
+		goto fail;
+	}
+	
+	/* Construct devices */
+	for (i = 0; i < lkm_ndevices; ++i) {
+		err = lkm_construct_device(&lkm_devices[i], i, lkm_class);
+		if (err) {
+			devices_to_destroy = i;
+			goto fail;
+		}
+	}
+	return 0; /* success */
+
+fail:
+	lkm_cleanup_module(devices_to_destroy);
+	return err;
+
 }
 
 static void __exit lkm_example_exit(void)
