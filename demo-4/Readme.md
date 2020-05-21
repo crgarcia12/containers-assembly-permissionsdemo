@@ -24,3 +24,9 @@ Even further:
 ```
 docker run -v /etc/shadow:/tmp/secrets.txt spycontainer
 ```
+
+You can now check what would happen if you would run as a non-root user:
+```
+id
+docker run --user 1000 -v /etc/shadow:/tmp/secrets.txt spycontainer
+```
