@@ -1,3 +1,6 @@
+# What is this demo?
+In here we will explore what is docker doing when creating a container. 
+
 # Get a terminal in docker
 docker run -it -v /tmp3:/mnt3 ubuntu /bin/sh 
 docker run -it ubuntu /bin/sh

@@ -1,27 +1,41 @@
-# ASEM
+# Description
+This demo covers many things!
+-compile assembly code
+-compile C code
+-disasembly C code
+-Set cgroups
+-Create namespaces 
+
+# Clean the project
+. clean.sh
+
+# Demo 1: Build Assembly
 Run this 
-. build.sh
+. assem-build.sh
+
+Or run this for 64 bits (WSL)
+. assem-build.sh -64 
 
 To compile in Linux
 ### this will produce main.o ELF object file
-nasm -f elf64 main.asm -o main.o
+nasm -f elf64 assem-main.asm -o assem-main.o
 ### this will produce main executable
-ld -s -o main main.o
+ld -s -o assem-main assem-main.o
 
-# C++
+# Demo 2: build C
 To build the C++ run this
 
 ```
-. hello.sh
-gcc hello.c -o hello
-./hello
+. c-build.sh
+gcc c-main.c -o c-main
+./c-main
 
 # Decompile:
 
-objdump -d hello > hello.asm
+objdump -d c-main > c-main.asm
 ```
 
-# To set cgroups manually
+# Demo 3: Set cgroups manually
 
 ```
 # These are the different controllers which are created by the kernel itself.

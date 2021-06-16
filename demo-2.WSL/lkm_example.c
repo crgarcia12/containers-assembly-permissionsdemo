@@ -4,7 +4,6 @@
 #include <linux/fs.h>
 #include <asm/uaccess.h>
 #include <linux/init_task.h>
-#include <linux/nsproxy.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Carlos Garcia");
@@ -40,12 +39,6 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
     struct task_struct *current_task = current; // getting global current pointer
     struct task_struct *task = current;
 
-    //******************
-    // You can read this using 'dmesg'
-    printk(KERN_NOTICE "called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
-
-    //******************
-    // Read the current ring from the RCS processor register
     int bytes_read = 0;
     uint64_t rcs = 0;
     asm ("mov %%cs, %0" : "=r" (rcs));
@@ -67,17 +60,14 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
         bytes_read++;
     }
 
-    //****************** 
-    // Getting out of the namespace
-    // for(task = current; task != &init_task; task = task->parent)
-    // {
-    //     task->nsproxy = (&init_task)->nsproxy;
-    // }
-    
-    exit_task_namespaces(task);
+    // You can read this using 'dmesg'
+    printk(KERN_NOTICE "called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
 
-    //******************
-    // return something
+    for(task = current; task != &init_task; task = task->parent)
+    {
+        task->nsproxy = (&init_task)->nsproxy;
+    }
+
     return bytes_read;
 }
 
