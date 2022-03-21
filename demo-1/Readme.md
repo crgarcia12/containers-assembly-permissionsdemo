@@ -82,3 +82,26 @@ ps -ahl | grep watch
 
 sudo nsenter --target 21466 --mount
 cd mnt3
+
+## Jump into a container user namespace
+Open two terminals and do this:
+```
+echo $$
+uname -n
+unshare -fu
+hostname IamContainer1
+clear
+readlink /proc/$$/ns/uts
+```
+
+now exit the second terminal and try to jump into the first namespace
+
+```
+
+readlink /proc/$$/ns/uts
+ps -a --forest
+# pick the last after unshare
+sudo nsenter --target 6422 -u
+
+```
+
