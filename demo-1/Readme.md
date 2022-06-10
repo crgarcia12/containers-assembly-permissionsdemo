@@ -101,7 +101,21 @@ now exit the second terminal and try to jump into the first namespace
 readlink /proc/$$/ns/uts
 ps -a --forest
 # pick the last after unshare
-sudo nsenter --target 6422 -u
+sudo nsenter --target 349 -u
 
 ```
 
+
+sudo unshare -fp /bin/bash
+
+# Example of the PID namespace
+```
+# Unshare the pid namespace and Fork
+unshare -Urpmf --mount-proc
+
+# List the processes
+ps -ef
+
+sudo nsenter --target 6422 -u
+mount -t proc proc /proc
+```
