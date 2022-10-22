@@ -49,22 +49,33 @@ make sure nothing is running with `wsl --list --running`
 Reopen your flavor of WSL2.
 
 ## Build the driver
+Take a look at the make file, make sure the paths are correct
+```
 sudo bash
 make
+```
 
 ## Load the driver
+```
 make test
+```
 
 ## invoke the driver
 
 ### Check the major number from the output of the previous command y use it to create a device file
+```
 sudo mknod /dev/lkm_example c <MAJOR> 0
+```
 
 ### Test it
+```
 cat /dev/lkm_example
+```
 
 ### To get kernel logs
+```
 dmesg
+```
 
 # The driver will make you jump your namespace:
 1. look at my mount namespace
