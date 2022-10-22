@@ -29,10 +29,12 @@ cd WSL2-Linux-Kernel
 cp Microsoft/config-wsl .config (if you've compiled previously, this may require sudo)
 
 sudo make -j $(expr $(nproc) - 1)
-
+```
 From Windows, copy \\wsl$\Ubuntu\home\WSL_USERNAME\WSL2-Linux-Kernel\arch\x86\boot\bzimage to C:\Users\crgar
 
-```
+If you cannot find it, use in wsl
+cd ~
+find . -name "bzimage"
 
 Create a file called `.wslconfig` in `C:\Users\crgar`
 Note: The double slashes (\\) are intentional. Also it seems there used to be a bug related to trailing white space. Feel free to test and possibly troubleshoot this or you can just remove any trailing white space to be safe.
@@ -42,7 +44,7 @@ kernel=C:\\Users\\crgar\\bzimage
 ```
 
 From PowerShell, run `wsl --shutdown`
-
+make sure nothing is running with `wsl --list --running`
 Reopen your flavor of WSL2.
 
 ## Build the driver
