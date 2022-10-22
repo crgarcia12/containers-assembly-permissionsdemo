@@ -20,6 +20,7 @@ To run this example, you need your own WSL Kernel, since the default one does no
 
 ## Prepare the environment
 ```
+cd ~
 sudo git clone https://github.com/microsoft/WSL2-Linux-Kernel.git
 
 sudo apt install build-essential flex bison libssl-dev libelf-dev
