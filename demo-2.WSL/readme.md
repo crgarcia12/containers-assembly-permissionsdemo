@@ -12,7 +12,7 @@ https://unix.stackexchange.com/questions/594470/wsl-2-does-not-have-lib-modules/
 
 Other good things are:
 
-Taking instructions from Linux device drivers book
+Taking instructions from Linux device drivers book: 
 https://learning.oreilly.com/library/view/linux-device-drivers/9781785280009/77b7fd36-fa66-45c1-9b38-65baf42c0d34.xhtml
 
 # Running the example
@@ -20,15 +20,13 @@ To run this example, you need your own WSL Kernel, since the default one does no
 
 ## Prepare the environment
 ```
+sudo apt install dwarves
+
 cd ~
 sudo git clone https://github.com/microsoft/WSL2-Linux-Kernel.git
-
 sudo apt install build-essential flex bison libssl-dev libelf-dev
-
 cd WSL2-Linux-Kernel
-
-cp Microsoft/config-wsl .config (if you've compiled previously, this may require sudo)
-
+cp Microsoft/config-wsl .config # if you've compiled previously, this may require sudo
 sudo make -j $(expr $(nproc) - 1)
 ```
 From Windows, copy \\wsl$\Ubuntu\home\WSL_USERNAME\WSL2-Linux-Kernel\arch\x86\boot\bzimage to C:\Users\crgar
