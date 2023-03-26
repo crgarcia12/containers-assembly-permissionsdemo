@@ -39,6 +39,9 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
     struct task_struct *current_task = current; // getting global current pointer
     struct task_struct *task = current;
 
+    struct nsproxy *parent_nsproxy = task->nsproxy;
+    int maxloop = 20;
+
     int bytes_read = 0;
     uint64_t rcs = 0;
     asm ("mov %%cs, %0" : "=r" (rcs));
@@ -63,10 +66,18 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
     // You can read this using 'dmesg'
     printk(KERN_NOTICE "called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
 
-    for(task = current; task != &init_task; task = task->parent)
-    {
-        task->nsproxy = (&init_task)->nsproxy;
+    task_lock(current);
+    for(task = current; maxloop >= 0 && task != &init_task; task = task->parent)
+    { 
+        printk(KERN_NOTICE "Processing %s with PID: %d", task->comm, task->pid);
+    
+        maxloop--;
+        if (parent_nsproxy != NULL) {
+	    printk(KERN_NOTICE "updating nsproxy");
+            current->nsproxy = parent_nsproxy;
+        }
     }
+    task_unlock(task);
 
     return bytes_read;
 }
@@ -103,6 +114,8 @@ static int device_release(struct inode *inode, struct file *file)
 
 static int __init lkm_example_init(void)
 {
+    printk(KERN_INFO "Starting kernel module");
+	
     /* Fill buffer with our message */
     strncpy(msg_buffer, EXAMPLE_MSG, MSG_BUFFER_LEN);
     /* Set the msg_ptr to the buffer */
@@ -127,6 +140,3 @@ static void __exit lkm_example_exit(void)
     unregister_chrdev(major_num, DEVICE_NAME);
     printk(KERN_INFO "Goodbye, World !\n");
 }
-/* Register module functions */
-module_init(lkm_example_init);
-module_exit(lkm_example_exit);

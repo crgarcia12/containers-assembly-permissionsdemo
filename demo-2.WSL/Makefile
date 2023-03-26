@@ -1,8 +1,8 @@
 obj-m += lkm_example.o
 all:
-	make -C /home/<usr>/WSL2-Linux-Kernel M=$(PWD) modules
+	make -C /home/crgarcia/WSL2-Linux-Kernel M=$(PWD) modules
 clean:
-	make -C /home/<usr>/WSL2-Linux-Kernel M=$(PWD) clean
+	make -C /home/crgarcia/WSL2-Linux-Kernel M=$(PWD) clean
 test:
 	# We put a — in front of the rmmod command to tell make to ignore
 	# an error in case the module isn’t loaded.
