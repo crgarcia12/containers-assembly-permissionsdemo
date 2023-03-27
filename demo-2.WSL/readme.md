@@ -80,13 +80,20 @@ dmesg
 ```
 1. look at my mount namespace
 ls -Li /proc/$$/ns/mnt
+ps --forest
 
 2. unshare
-unshare --mount
-bash
+unshare --mount bash
+ps --forest
 ls -Li /proc/$$/ns/mnt
 
 3. run the driver and check your new namespace
-cat /dev/lkm_example
+echo 3 > /dev/lkm_example
 ls -Li /proc/$$/ns/mnt
+```
+
+You can also play around with docker. <br />
+Make sure you restart docker and disable/re-enable docker for WSl after changing the image <br />
+```
+docker run -it --device=/dev/lkm_example ubuntu
 ```

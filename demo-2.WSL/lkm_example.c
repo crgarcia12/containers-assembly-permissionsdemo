@@ -10,18 +10,21 @@ MODULE_AUTHOR("Carlos Garcia");
 MODULE_DESCRIPTION("A simple example Linux module.");
 MODULE_VERSION("0.01");
 
-#define DEVICE_NAME "lkm_example"
-#define EXAMPLE_MSG "Hello, World. This is executed in ring: _ \n"
-#define MSG_BUFFER_LEN 43
-
 /* Prototypes for device functions */
 static int device_open(struct inode *, struct file *);
 static int device_release(struct inode *, struct file *);
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
 static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
+
+/* Global Variables*/
+#define DEVICE_NAME "lkm_example"
+#define EXAMPLE_MSG "Hello, World. This is executed in ring: _ \n"
+#define MSG_BUFFER_LEN 43
+
 static int major_num;
 static int device_open_count = 0;
 static char msg_buffer[MSG_BUFFER_LEN];
+static char device_write_buffer[1];
 static char *msg_ptr;
 
 /* This structure points to all of the device functions */
@@ -35,26 +38,16 @@ static struct file_operations file_ops = {
 /* When a process reads from our device, this gets called. */
 static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *offset)
 {
+    struct task_struct *current_task = current; // getting global current pointer
+    
     int bytes_read = 0;
     uint64_t rcs = 0;
     asm ("mov %%cs, %0" : "=r" (rcs));
     msg_buffer[MSG_BUFFER_LEN - 3] = (int) (rcs & 3) + '0';
     
     // You can read this using 'dmesg'
-    printk(KERN_NOTICE "[v3] called the driver. current process: %s, PID: %d, Offset: %d", current_task->comm, current_task->pid, *offset);
-
-    /* If we’re at the end of the message, return 0 signifying end of file */
-    if(*offset > 0)
-    {
-        return 0;
-    }
-    
-    /* If we’re at the end, loop back to the beginning */
-    if (*msg_ptr == 0)
-    {
-        msg_ptr = msg_buffer;
-    }
-
+    printk(KERN_NOTICE "[v4] called the driver. current process: %s, PID: %d, Offset: %lld", current_task->comm, current_task->pid, *offset);
+   
     /* Put data in the buffer */
     while (len && *msg_ptr)
     {
@@ -75,9 +68,16 @@ static ssize_t device_write(struct file *flip, const char *buffer, size_t len, l
     struct task_struct *current_task = current; // getting global current pointer
     struct task_struct *task = current;
     struct nsproxy *parent_nsproxy;
-    int maxloop = 2;
+    int maxloop;
 
-    printk(KERN_NOTICE "[v4] called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
+    printk(KERN_NOTICE "[v5] called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
+
+    // get one character. expect an int
+    get_user(*(device_write_buffer), buffer);
+    maxloop = device_write_buffer[0] - '0';
+
+    
+    printk(KERN_NOTICE "[v6] Read: %c. Parsed: %d", device_write_buffer[0], maxloop);
 
     task_lock(current);
     
@@ -101,12 +101,18 @@ static ssize_t device_write(struct file *flip, const char *buffer, size_t len, l
 /* Called when a process opens our device */
 static int device_open(struct inode *inode, struct file *file)
 {
+    printk(KERN_NOTICE "Device Open");
+
     /* If device is open, return busy */
     if (device_open_count)
     {
         return -EBUSY;
     }
     device_open_count++;
+
+    /* A new open, reset the pointer*/
+    msg_ptr = msg_buffer;
+    
     try_module_get(THIS_MODULE);
     return 0;
 }
@@ -114,6 +120,7 @@ static int device_open(struct inode *inode, struct file *file)
 /* Called when a process closes our device */
 static int device_release(struct inode *inode, struct file *file)
 {
+    printk(KERN_NOTICE "Device Release");
     /* Decrement the open counter and usage count. Without this, the module would not unload. */
     device_open_count--;
     module_put(THIS_MODULE);

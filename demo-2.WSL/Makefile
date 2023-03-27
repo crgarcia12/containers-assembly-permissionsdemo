@@ -16,10 +16,11 @@ test:
 load:
 	sudo mknod /dev/lkm_example c 241 0
 unload:
-	sudo rm /dev/lkm_example
-	sudo rmmod lkm_example
+	-sudo rm /dev/lkm_example
+	-sudo rmmod lkm_example
 full:
 	make clean
+	make unload
 	make
 	make test
 	make load
