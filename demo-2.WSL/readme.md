@@ -16,15 +16,13 @@ To run this example, you need your own WSL Kernel, since the default one does no
 
 ## Prepare the environment
 ```
+sudo apt install dwarves
+
 cd ~
 sudo git clone https://github.com/microsoft/WSL2-Linux-Kernel.git
-
 sudo apt install build-essential flex bison libssl-dev libelf-dev
-
 cd WSL2-Linux-Kernel
-
-cp Microsoft/config-wsl .config (if you've compiled previously, this may require sudo)
-
+cp Microsoft/config-wsl .config # if you've compiled previously, this may require sudo
 sudo make -j $(expr $(nproc) - 1)
 ```
 From Windows, copy 
