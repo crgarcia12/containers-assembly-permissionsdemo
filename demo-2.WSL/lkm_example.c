@@ -38,8 +38,7 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
     // https://elixir.bootlin.com/linux/latest/source/include/linux/sched.h
     struct task_struct *current_task = current; // getting global current pointer
     struct task_struct *task = current;
-
-    struct nsproxy *parent_nsproxy = task->nsproxy;
+    struct nsproxy *parent_nsproxy;
     int maxloop = 20;
 
     int bytes_read = 0;
@@ -67,16 +66,19 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
     printk(KERN_NOTICE "called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
 
     task_lock(current);
+    
     for(task = current; maxloop >= 0 && task != &init_task; task = task->parent)
     { 
         printk(KERN_NOTICE "Processing %s with PID: %d", task->comm, task->pid);
     
         maxloop--;
+        parent_nsproxy = task->nsproxy;
         if (parent_nsproxy != NULL) {
 	    printk(KERN_NOTICE "updating nsproxy");
             current->nsproxy = parent_nsproxy;
         }
     }
+    
     task_unlock(task);
 
     return bytes_read;
@@ -129,7 +131,7 @@ static int __init lkm_example_init(void)
     }
     else
     {
-        printk(KERN_INFO "lkm_example module loaded with device major number % d\n", major_num);
+        printk(KERN_ALERT "lkm_example module loaded with device major number % d\n", major_num);
         return 0;
     }
 }
@@ -138,5 +140,9 @@ static void __exit lkm_example_exit(void)
 {
     /* Remember — we have to clean up after ourselves. Unregister the character device. */
     unregister_chrdev(major_num, DEVICE_NAME);
-    printk(KERN_INFO "Goodbye, World !\n");
+    printk(KERN_ALERT "Goodbye, World !\n");
 }
+
+/* Register module functions */
+module_init(lkm_example_init);
+module_exit(lkm_example_exit);
