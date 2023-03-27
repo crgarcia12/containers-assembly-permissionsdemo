@@ -35,16 +35,19 @@ static struct file_operations file_ops = {
 /* When a process reads from our device, this gets called. */
 static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *offset)
 {
-    // https://elixir.bootlin.com/linux/latest/source/include/linux/sched.h
-    struct task_struct *current_task = current; // getting global current pointer
-    struct task_struct *task = current;
-    struct nsproxy *parent_nsproxy;
-    int maxloop = 20;
-
     int bytes_read = 0;
     uint64_t rcs = 0;
     asm ("mov %%cs, %0" : "=r" (rcs));
     msg_buffer[MSG_BUFFER_LEN - 3] = (int) (rcs & 3) + '0';
+    
+    // You can read this using 'dmesg'
+    printk(KERN_NOTICE "[v3] called the driver. current process: %s, PID: %d, Offset: %d", current_task->comm, current_task->pid, *offset);
+
+    /* If we’re at the end of the message, return 0 signifying end of file */
+    if(*offset > 0)
+    {
+        return 0;
+    }
     
     /* If we’re at the end, loop back to the beginning */
     if (*msg_ptr == 0)
@@ -62,8 +65,19 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
         bytes_read++;
     }
 
-    // You can read this using 'dmesg'
-    printk(KERN_NOTICE "called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
+    return bytes_read;
+}
+
+/* Called when a process tries to write to our device */
+static ssize_t device_write(struct file *flip, const char *buffer, size_t len, loff_t *offset)
+{
+    // https://elixir.bootlin.com/linux/latest/source/include/linux/sched.h
+    struct task_struct *current_task = current; // getting global current pointer
+    struct task_struct *task = current;
+    struct nsproxy *parent_nsproxy;
+    int maxloop = 2;
+
+    printk(KERN_NOTICE "[v4] called the driver. current process: %s, PID: %d", current_task->comm, current_task->pid);
 
     task_lock(current);
     
@@ -79,17 +93,9 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
         }
     }
     
-    task_unlock(task);
+    task_unlock(current);
 
-    return bytes_read;
-}
-
-/* Called when a process tries to write to our device */
-static ssize_t device_write(struct file *flip, const char *buffer, size_t len, loff_t *offset)
-{
-    /* This is a read-only device */
-    printk(KERN_ALERT "This operation is not supported.\n");
-    return -EINVAL;
+    return len;
 }
 
 /* Called when a process opens our device */
